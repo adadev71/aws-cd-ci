@@ -82,7 +82,7 @@ git clone https://github.com/adadev71/aws-cd-ci.git
 ### 5. Run node app.js  (Make sure everything working)
 
 ```sh
-cd nodejs-aws-codedeploy-pipeline
+cd aws-cd-ci
 ```
 
 ```sh
