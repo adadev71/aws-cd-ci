@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Random Picsum Photo</title>
+</head>
+<body style="text-align:center; font-family: sans-serif;">
+  <h1>Random Picsum Photo</h1>
+  <img src="<%= imageUrl %>" alt="Random Photo"><br><br>
+
+  <form action="/save" method="POST">
+    <button type="submit">Save to S3</button>
+  </form>
+  <br>
+  <a href="/">Get Another Random Photo</a>
+  
+</body>
+</html>
