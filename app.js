@@ -1,6 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 require("dotenv").config();
 
 // No need to import node-fetch! Node 18+ has fetch built-in
@@ -60,6 +60,40 @@ debugger;
   } catch (err) {
     console.error("S3 Upload Error:", err);
     res.status(500).send("❌ Error saving to S3: " + err.message);
+  }
+});
+
+app.get("/list", async (req, res) => {
+  try {
+    const data = await s3.send(new ListObjectsV2Command({
+      Bucket: process.env.S3_BUCKET_NAME,
+    }));
+
+    if (!data.Contents || data.Contents.length === 0) {
+      return res.send("📂 No images found in bucket.");
+    }
+
+    const images = data.Contents.map(obj => {
+      return `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${obj.Key}`;
+    });
+
+    // Simple HTML page
+let html = "<h2>📸 Saved Images</h2>";
+html += images.map(url => {
+  const key = url.split("/").pop(); // get filename
+  return `
+    <div style="margin:10px">
+      <img src="${url}" width="200"><br>
+      <a href="${url}" target="_blank">${key}</a> 
+    </div>
+  `;
+}).join("");
+html += `<br><a href="/">⬅️ Back to Home</a>`;
+
+    res.send(html);
+  } catch (err) {
+    console.error("S3 List Error:", err);
+    res.status(500).send("❌ Error fetching images: " + err.message);
   }
 });
 
