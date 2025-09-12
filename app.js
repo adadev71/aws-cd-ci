@@ -84,7 +84,8 @@ html += images.map(url => {
   return `
     <div style="margin:10px">
       <img src="${url}" width="200"><br>
-      <a href="${url}" target="_blank">${key}</a> 
+      <a href="${url}" target="_blank">${key}</a> |
+      <a href="/delete/${encodeURIComponent(key)}" style="color:red">🗑️ Delete</a>
     </div>
   `;
 }).join("");
@@ -97,6 +98,21 @@ html += `<br><a href="/">⬅️ Back to Home</a>`;
   }
 });
 
+app.get("/delete/:key", async (req, res) => {
+  const key = req.params.key; // filename in S3
+
+  try {
+    await s3.send(new DeleteObjectCommand({
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: key,
+    }));
+
+    res.send(`🗑️ Deleted <b>${key}</b><br><a href="/lists">⬅️ Back to Images</a>`);
+  } catch (err) {
+    console.error("S3 Delete Error:", err);
+    res.status(500).send("❌ Error deleting image: " + err.message);
+  }
+});
 
 
 
