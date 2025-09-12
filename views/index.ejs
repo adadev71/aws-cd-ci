@@ -8,10 +8,10 @@
   <img src="<%= imageUrl %>" alt="Random Photo"><br><br>
 
   <form action="/save" method="POST">
+    <input type="hidden" name="c_imageUrl" value="<%= imageUrl %>">
     <button type="submit">Save to S3</button>
   </form>
   <br>
   <a href="/">Get Another Random Photo</a>
-  
 </body>
 </html>

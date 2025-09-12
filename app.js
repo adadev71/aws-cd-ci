@@ -21,15 +21,27 @@ const s3 = new S3Client({
 
 let lastImageUrl = "";
 
-app.get("/", (req, res) => {
-  lastImageUrl = `https://picsum.photos/400/400?random=${Date.now()}`;
-  res.render("index", { imageUrl: lastImageUrl });
+// Route for homepage
+app.get("/", async (req, res) => {
+  // fetch list of images from picsum
+  const response = await fetch("https://picsum.photos/v2/list?page=1&limit=100");
+  const images = await response.json();
+
+  // pick random
+  const random = images[Math.floor(Math.random() * images.length)];
+  const imageUrl = `https://picsum.photos/id/${random.id}/400/400`;
+    console.log("Random Image URL:", imageUrl); 
+  res.render("index", { imageUrl });
 });
 
-app.post("/save", async (req, res) => {
-  if (!lastImageUrl) return res.send("No image to save!");
 
-  const response = await fetch(lastImageUrl);
+app.post("/save", async (req, res) => {
+  console.log("Form Data:Submiied ", req.body);
+  debugger;
+  const GCimageUrl = req.body.c_imageUrl;   // get from form
+  if (!GCimageUrl) return res.send("No image to save!");
+debugger;
+  const response = await fetch(GCimageUrl);
   const buffer = Buffer.from(await response.arrayBuffer());
 
   const fileName = `picsum-${Date.now()}.jpg`;
@@ -40,16 +52,17 @@ app.post("/save", async (req, res) => {
       Key: fileName,
       Body: buffer,
       ContentType: "image/jpeg",
-      ACL: "public-read",  // allows public access
+      ACL: "public-read",
     }));
 
     const publicUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
-    res.send(`✅ Saved to S3: <a href="${publicUrl}" target="_blank">${publicUrl}</a><br><a href="/">Go Back</a>    `);
+    res.send(`✅ Saved to S3: <a href="${publicUrl}" target="_blank">${publicUrl}</a><br><a href="/">Go Back</a>`);
   } catch (err) {
     console.error("S3 Upload Error:", err);
     res.status(500).send("❌ Error saving to S3: " + err.message);
   }
 });
+
 
 
 
